@@ -10,7 +10,6 @@
 #define POLYSENSE_REFRACTION_COLOR_H
 
 #include <stdexcept>
-#include <string>
 #include <cmath>
 
 #include <stdint.h>
@@ -58,7 +57,8 @@ inline constexpr wavelength operator ""_nm(long double wave) {
 }
 
 /**
- *  Represents a sRGB color value 
+ *  Represents a sRGB color value
+ *      TODO: allow for custom color spaces
 **/
 struct sRGB {
     color_t red, green, blue;
@@ -74,6 +74,9 @@ sRGB wavelength_to_srgb(wavelength wave){
     // must be set in the following conditional block
     color_t r, g, b;
 
+    // magic conditional block from internet... I need to better understand what is going on
+    //      translated js from https://www.johndcook.com/wavelength_to_RGB.html
+    // more comprehensive (but less comprehensible) starting point https://www.fourmilab.ch/documents/specrend/#cprog
     if(wave >= 380_nm && wave < 440_nm){
         r = -((wave_t)wave - 440) / (440 - 380);
         g = 0.0;
@@ -100,6 +103,10 @@ sRGB wavelength_to_srgb(wavelength wave){
         b = 0.0;
     } else {
         throw std::invalid_argument("Only wavelengths in the range [380, 781) nm can be converted");
+    }
+
+    if(r < 0.0 || g < 0.0 || b < 0.0){
+        throw std::invalid_argument("Wavelength resulted in negative rgb component - not representable");
     }
 
     const wave_t gamma = 0.8;
